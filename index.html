@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulación de Distribución Bernoulli - Ingeniería Industrial</title>
+<style>
+:root{
+  --bg:#f5f7fb;
+  --card:#ffffff;
+  --text:#172033;
+  --muted:#5e6b82;
+  --border:#dde3ee;
+  --accent:#315efb;
+  --accent2:#19a974;
+  --danger:#d64545;
+  --soft:#eef2ff;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter,Segoe UI,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+.container{
+  width:min(1180px,94%);
+  margin:28px auto 56px;
+}
+h1{font-size:30px;margin:0 0 6px}
+.subtitle{color:var(--muted);margin-bottom:22px}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  gap:16px;
+}
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:18px;
+  box-shadow:0 5px 16px rgba(20,35,70,.05);
+}
+.controls{grid-column:span 4}
+.context{grid-column:span 8}
+.formulas{grid-column:span 12}
+.results{grid-column:span 12}
+.chart-card{grid-column:span 6}
+.simulation{grid-column:span 12}
+h2{font-size:19px;margin:0 0 12px}
+h3{font-size:15px;margin:16px 0 8px}
+p{line-height:1.55;margin:7px 0}
+label{display:block;font-weight:650;margin:14px 0 6px}
+input[type=range]{width:100%}
+input[type=number]{
+  width:100%;
+  padding:9px 10px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  font-size:15px;
+}
+.value-badge{
+  display:inline-block;
+  padding:3px 9px;
+  background:var(--soft);
+  border-radius:999px;
+  color:var(--accent);
+  font-weight:700;
+}
+button{
+  width:100%;
+  margin-top:16px;
+  border:0;
+  background:var(--accent);
+  color:white;
+  padding:11px 14px;
+  border-radius:10px;
+  font-weight:700;
+  font-size:15px;
+  cursor:pointer;
+}
+button:hover{filter:brightness(.96)}
+.formula-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:10px;
+}
+.formula{
+  padding:13px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:#fbfcff;
+}
+.formula .name{font-size:13px;color:var(--muted);margin-bottom:7px}
+.eq{font-family:"Cambria Math",Georgia,serif;font-size:18px}
+.metrics{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:10px;
+}
+.metric{
+  padding:13px;
+  border-radius:12px;
+  background:#f8faff;
+  border:1px solid var(--border);
+}
+.metric .k{font-size:12px;color:var(--muted)}
+.metric .v{font-size:20px;font-weight:800;margin-top:5px}
+canvas{
+  width:100%;
+  height:310px;
+  display:block;
+}
+.legend{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:8px;
+}
+.table-wrap{overflow:auto}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:8px;
+}
+th,td{
+  padding:9px 10px;
+  border-bottom:1px solid var(--border);
+  text-align:center;
+}
+th{background:#f7f9fd}
+.tag-ok{color:var(--accent2);font-weight:700}
+.tag-bad{color:var(--danger);font-weight:700}
+.note{
+  background:#fff8e8;
+  border:1px solid #f2dc9b;
+  border-radius:12px;
+  padding:11px 13px;
+  margin-top:12px;
+  font-size:13px;
+  line-height:1.45;
+}
+
+.data-sequence{
+  font-family:Consolas,monospace;
+  background:#f7f9fd;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px;
+  max-height:120px;
+  overflow:auto;
+  line-height:1.6;
+  word-break:break-word;
+  margin-top:10px;
+}
+.data-actions{
+  display:flex;
+  gap:10px;
+  align-items:end;
+  flex-wrap:wrap;
+  margin:12px 0 4px;
+}
+.data-actions > div{
+  flex:1 1 180px;
+}
+.data-actions button{
+  width:auto;
+  margin-top:0;
+}
+.small-muted{
+  color:var(--muted);
+  font-size:12px;
+  margin-top:7px;
+}
+
+
+.piece-interpretation{
+  margin-top:14px;
+  padding:14px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:#fbfcff;
+}
+.piece-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-top:10px;
+}
+.piece-card{
+  padding:13px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:#ffffff;
+}
+.piece-card .k{
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:5px;
+}
+.piece-card .v{
+  font-size:20px;
+  font-weight:800;
+}
+.piece-card .explain{
+  margin-top:6px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.4;
+}
+@media(max-width:760px){
+  .piece-grid{grid-template-columns:1fr}
+}
+
+@media(max-width:900px){
+  .controls,.context,.chart-card{grid-column:span 12}
+  .formula-grid{grid-template-columns:1fr 1fr}
+  .metrics{grid-template-columns:1fr 1fr}
+}
+@media(max-width:560px){
+  .formula-grid,.metrics{grid-template-columns:1fr}
+}
+
+.institutional-header{
+  background:#ffffff;
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:26px 28px;
+  margin-bottom:22px;
+  text-align:center;
+  box-shadow:0 5px 16px rgba(20,35,70,.05);
+}
+.institutional-header .university{font-size:30px;font-weight:800;margin-bottom:8px;line-height:1.2}
+.institutional-header .program{font-size:24px;font-weight:700;margin-bottom:6px;line-height:1.25}
+.institutional-header .course{font-size:22px;color:var(--text);font-weight:650;margin-bottom:6px;line-height:1.25}
+.institutional-header .professor{font-size:21px;font-weight:700;line-height:1.25}
+.institutional-rule{width:72px;height:3px;background:var(--accent);border-radius:999px;margin:12px auto 0}
+.eq{
+  font-family:"Cambria Math","STIX Two Math","STIXGeneral","Times New Roman",serif;
+  font-size:20px; line-height:1.35; min-height:70px; display:flex;
+  align-items:center; justify-content:center; text-align:center; overflow-x:auto; padding:5px 2px;
+}
+.eq math,.math-inline math,.math-explain math{
+  font-family:"Cambria Math","STIX Two Math","STIXGeneral","Times New Roman",serif;
+}
+.eq math{font-size:1.08em}
+.math-inline{display:inline-flex;align-items:center;vertical-align:middle}
+.math-explain{
+  margin-top:8px;min-height:30px;display:flex;align-items:center;justify-content:flex-start;
+  overflow-x:auto;color:var(--muted);font-size:15px;
+}
+.formula{min-width:0}
+.formula .name{min-height:32px}
+@media(max-width:1100px){.formula-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:620px){
+  .formula-grid{grid-template-columns:1fr}
+  .institutional-header .university{font-size:30px;font-weight:800;margin-bottom:8px;line-height:1.2}
+}
+
+
+.formula-grid{
+  display:block;
+}
+.formula{
+  padding:8px 6px 18px;
+  border:none;
+  border-radius:0;
+  background:transparent;
+}
+.formula + .formula{
+  margin-top:2px;
+}
+.formula .name{
+  min-height:0;
+  margin-bottom:8px;
+  font-size:16px;
+  color:var(--text);
+  font-weight:500;
+}
+.eq{
+  font-family:"Cambria Math","STIX Two Math","STIXGeneral","Times New Roman",serif;
+  font-size:26px;
+  line-height:1.5;
+  min-height:58px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  overflow-x:auto;
+  padding:2px 8px 6px;
+}
+.eq math{font-size:1.18em}
+@media(max-width:620px){
+  .institutional-header .university{font-size:23px}
+  .institutional-header .program{font-size:20px}
+  .institutional-header .course{font-size:18px}
+  .institutional-header .professor{font-size:17px}
+  .eq{font-size:21px}
+}
+
+
+/* Modelo probabilístico: siempre en disposición horizontal */
+.formulas{
+  overflow-x:auto;
+}
+.formulas .formula-grid{
+  display:grid !important;
+  grid-template-columns:
+    minmax(220px,1.20fr)
+    minmax(300px,1.55fr)
+    minmax(175px,.90fr)
+    minmax(175px,.90fr)
+    minmax(210px,1.05fr) !important;
+  gap:12px;
+  min-width:1120px;
+  align-items:stretch;
+}
+.formulas .formula{
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
+  min-width:0;
+}
+.formulas .formula .name{
+  min-height:38px;
+  font-size:13px;
+  line-height:1.25;
+  margin-bottom:8px;
+}
+.formulas .eq{
+  flex:1;
+  min-height:105px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:6px 4px;
+}
+.formulas .eq math{
+  font-size:1.10em;
+}
+/* Evitar que las reglas responsivas anteriores rompan la fila horizontal */
+@media(max-width:1100px){
+  .formulas .formula-grid{
+    grid-template-columns:
+      minmax(220px,1.20fr)
+      minmax(300px,1.55fr)
+      minmax(175px,.90fr)
+      minmax(175px,.90fr)
+      minmax(210px,1.05fr) !important;
+  }
+}
+@media(max-width:560px){
+  .formulas .formula-grid{
+    grid-template-columns:
+      minmax(220px,1.20fr)
+      minmax(300px,1.55fr)
+      minmax(175px,.90fr)
+      minmax(175px,.90fr)
+      minmax(210px,1.05fr) !important;
+  }
+}
+
+
+/* ===== Modelo probabilístico en dos filas ===== */
+.formulas{
+  overflow:visible !important;
+}
+
+.formulas .formula-grid{
+  display:grid !important;
+  grid-template-columns:repeat(6, minmax(0,1fr)) !important;
+  gap:16px !important;
+  min-width:0 !important;
+  align-items:stretch;
+}
+
+/* Primera fila: FMP y FDA */
+.formulas .formula:nth-child(1),
+.formulas .formula:nth-child(2){
+  grid-column:span 3;
+}
+
+/* Segunda fila: promedio, varianza y desviación estándar */
+.formulas .formula:nth-child(3),
+.formulas .formula:nth-child(4),
+.formulas .formula:nth-child(5){
+  grid-column:span 2;
+}
+
+.formulas .formula{
+  min-width:0 !important;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
+}
+
+.formulas .formula .name{
+  min-height:auto !important;
+  margin-bottom:10px !important;
+  font-size:14px !important;
+  font-weight:650;
+  text-align:left;
+}
+
+.formulas .eq{
+  min-height:105px !important;
+  width:100%;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  overflow:visible !important;
+  padding:8px 6px !important;
+  text-align:center;
+}
+
+/* La FDA necesita un poco más de altura por la función por tramos */
+.formulas .formula:nth-child(2) .eq{
+  min-height:145px !important;
+}
+
+.formulas .eq math{
+  font-size:1.18em !important;
+  max-width:100%;
+}
+
+/* Fórmulas compactas de la segunda fila */
+.formulas .formula:nth-child(3) .eq math,
+.formulas .formula:nth-child(4) .eq math,
+.formulas .formula:nth-child(5) .eq math{
+  font-size:1.28em !important;
+}
+
+/* Sin scroll interno en las ecuaciones */
+.formulas .eq,
+.formulas .formula{
+  overflow-x:visible !important;
+}
+
+/* Adaptación para pantallas medianas */
+@media(max-width:900px){
+  .formulas .formula-grid{
+    grid-template-columns:repeat(2, minmax(0,1fr)) !important;
+  }
+
+  .formulas .formula:nth-child(1),
+  .formulas .formula:nth-child(2),
+  .formulas .formula:nth-child(3),
+  .formulas .formula:nth-child(4){
+    grid-column:span 1;
+  }
+
+  .formulas .formula:nth-child(5){
+    grid-column:1 / -1;
+  }
+}
+
+/* En celular: una fórmula por fila */
+@media(max-width:600px){
+  .formulas .formula-grid{
+    grid-template-columns:1fr !important;
+  }
+
+  .formulas .formula:nth-child(n){
+    grid-column:1 / -1 !important;
+  }
+
+  .formulas .eq math{
+    font-size:1.05em !important;
+  }
+}
+
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="institutional-header">
+    <div class="university">Universidad Autónoma del Estado de Hidalgo</div>
+    <div class="program">Licenciatura en Ingeniería Industrial</div>
+    <div class="course">Estadística Inferencial</div>
+    <div class="professor">Dr. Isidro Jesús González Hernández</div>
+    <div class="institutional-rule"></div>
+  </header>
+  <h1>Simulación interactiva de la distribución Bernoulli</h1>
+
+  <div class="grid">
+    <section class="card controls">
+      <h2>Parámetros de la simulación</h2>
+
+      <label>Probabilidad de pieza no conforme, p:
+        <span class="value-badge" id="pBadge">0.10</span>
+      </label>
+      <input id="pSlider" type="range" min="0" max="1" step="0.01" value="0.10">
+
+      <label for="nInput">Tamaño de muestra, n</label>
+      <input id="nInput" type="number" min="1" max="100000" step="1" value="100">
+
+      <button id="simulateBtn">Generar nueva muestra</button>
+
+      <div class="note">
+        <strong>Parámetro principal:</strong> <em>p</em> es la probabilidad de obtener <em>X</em> = 1.
+        En esta aplicación, <em>X</em> = 1 significa que la pieza inspeccionada es <strong>no conforme</strong>.
+        Entonces 1 − <em>p</em> es la probabilidad de que la pieza sea conforme.
+      </div>
+    </section>
+
+    <section class="card context">
+      <h2>Aplicación en Ingeniería Industrial: inspección de calidad de piezas producidas</h2>
+      <p>
+        Una empresa fabrica piezas metálicas y realiza una inspección final. Para cada pieza se registra únicamente
+        uno de dos resultados: <strong>no conforme</strong> o <strong>conforme</strong>.
+      </p>
+      <p>
+        Definimos la variable aleatoria:
+        <strong>X = 1</strong> si la pieza es no conforme y <strong>X = 0</strong> si cumple especificaciones.
+        Cada inspección se modela como un ensayo Bernoulli con probabilidad de no conformidad <strong>p</strong>.
+      </p>
+      <p>
+        La simulación genera <strong>n inspecciones independientes</strong>. Al cambiar <em>p</em> se modifica el nivel de
+        calidad supuesto del proceso; al cambiar <em>n</em> se observa cómo la frecuencia simulada se aproxima a la
+        probabilidad teórica conforme aumenta la muestra.
+      </p>
+      <h3>Interpretación rápida</h3>
+      <p>
+        Si <em>p</em> = 0.10, cada pieza tiene una probabilidad de 10% de resultar no conforme y 90% de resultar conforme.
+        Esto <strong>no significa</strong> que exactamente 10 de cada 100 piezas deban salir defectuosas; el resultado
+        de una muestra cambia por variación aleatoria.
+      </p>
+    </section>
+
+    <section class="card formulas">
+      <h2>Modelo probabilístico</h2>
+      <div class="formula-grid">
+
+        <div class="formula">
+          <div class="name">Función de masa de probabilidad</div>
+          <div class="eq">
+            <math display="block" aria-label="f de x igual a p elevado a x por uno menos p elevado a uno menos x">
+              <mrow>
+                <mi>f</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo>
+                <msup><mi>p</mi><mi>x</mi></msup>
+                <msup>
+                  <mrow><mo>(</mo><mn>1</mn><mo>−</mo><mi>p</mi><mo>)</mo></mrow>
+                  <mrow><mn>1</mn><mo>−</mo><mi>x</mi></mrow>
+                </msup>
+              </mrow>
+            </math>
+          </div>
+        </div>
+
+        <div class="formula">
+          <div class="name">Función de distribución acumulada</div>
+          <div class="eq">
+            <math display="block" aria-label="Función de distribución acumulada de Bernoulli por tramos">
+              <mrow>
+                <mi>F</mi><mo>(</mo><mi>x</mi><mo>)</mo><mo>=</mo>
+                <mrow>
+                  <mo>{</mo>
+                  <mtable columnalign="left left" rowspacing="0.35em" columnspacing="1.4em">
+                    <mtr>
+                      <mtd><mn>0</mn></mtd>
+                      <mtd><mtext>si</mtext><mspace width="1em"/><mi>x</mi><mo>&lt;</mo><mn>0</mn></mtd>
+                    </mtr>
+                    <mtr>
+                      <mtd><mn>1</mn><mo>−</mo><mi>p</mi></mtd>
+                      <mtd><mtext>si</mtext><mspace width="1em"/><mn>0</mn><mo>≤</mo><mi>x</mi><mo>&lt;</mo><mn>1</mn></mtd>
+                    </mtr>
+                    <mtr>
+                      <mtd><mn>1</mn></mtd>
+                      <mtd><mtext>si</mtext><mspace width="1em"/><mi>x</mi><mo>≥</mo><mn>1</mn></mtd>
+                    </mtr>
+                  </mtable>
+                </mrow>
+              </mrow>
+            </math>
+          </div>
+        </div>
+
+        <div class="formula">
+          <div class="name">Promedio</div>
+          <div class="eq">
+            <math display="block" aria-label="mu igual al valor esperado de X igual a p">
+              <mrow><mi>μ</mi><mo>=</mo><mi>E</mi><mo>(</mo><mi>X</mi><mo>)</mo><mo>=</mo><mi>p</mi></mrow>
+            </math>
+          </div>
+        </div>
+
+        <div class="formula">
+          <div class="name">Varianza</div>
+          <div class="eq">
+            <math display="block" aria-label="sigma al cuadrado igual a p por uno menos p">
+              <mrow>
+                <msup><mi>σ</mi><mn>2</mn></msup><mo>=</mo>
+                <mi>p</mi><mo>(</mo><mn>1</mn><mo>−</mo><mi>p</mi><mo>)</mo>
+              </mrow>
+            </math>
+          </div>
+        </div>
+
+        <div class="formula">
+          <div class="name">Desviación estándar</div>
+          <div class="eq">
+            <math display="block" aria-label="sigma igual a raíz cuadrada de p por uno menos p">
+              <mrow>
+                <mi>σ</mi><mo>=</mo>
+                <msqrt>
+                  <mrow><mi>p</mi><mo>(</mo><mn>1</mn><mo>−</mo><mi>p</mi><mo>)</mo></mrow>
+                </msqrt>
+              </mrow>
+            </math>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="card results">
+      <h2>Resultados teóricos y simulados</h2>
+      <div class="metrics">
+        <div class="metric"><div class="k"><span class="math-inline"><math><mrow><mi>P</mi><mo>(</mo><mi>X</mi><mo>=</mo><mn>0</mn><mo>)</mo></mrow></math></span> teórica</div><div class="v" id="prob0">0.9000</div></div>
+        <div class="metric"><div class="k"><span class="math-inline"><math><mrow><mi>P</mi><mo>(</mo><mi>X</mi><mo>=</mo><mn>1</mn><mo>)</mo></mrow></math></span> teórica</div><div class="v" id="prob1">0.1000</div></div>
+        <div class="metric"><div class="k">Promedio teórico</div><div class="v" id="meanTheo">0.1000</div></div>
+        <div class="metric"><div class="k">Varianza teórica</div><div class="v" id="varTheo">0.0900</div></div>
+        <div class="metric"><div class="k">Desv. estándar teórica</div><div class="v" id="sdTheo">0.3000</div></div>
+        <div class="metric"><div class="k">Proporción simulada X=1</div><div class="v" id="meanSim">—</div></div>
+      </div>
+      <div class="piece-interpretation">
+        <h3 style="margin-top:0">Interpretación en número de piezas</h3>
+        <p>
+          Los valores anteriores describen una sola observación Bernoulli. Para relacionarlos con una muestra
+          de <strong><span id="nPiecesLabel">100</span> piezas</strong>, consideramos el número total esperado de
+          piezas no conformes en la muestra.
+        </p>
+        <div class="piece-grid">
+          <div class="piece-card">
+            <div class="k">Promedio esperado de piezas no conformes</div>
+            <div class="v" id="meanPieces">10.00 piezas</div>
+            <div class="math-explain" id="meanPiecesExplain"><math><mrow><mi>n</mi><mo>×</mo><mi>p</mi><mo>=</mo><mn>100</mn><mo>×</mo><mn>0.10</mn><mo>=</mo><mn>10.00</mn></mrow></math></div>
+          </div>
+          <div class="piece-card">
+            <div class="k">Varianza del número de piezas no conformes</div>
+            <div class="v" id="varPieces">9.00 piezas²</div>
+            <div class="math-explain" id="varPiecesExplain"><math><mrow><mi>n</mi><mo>×</mo><mi>p</mi><mo>×</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>p</mi><mo>)</mo><mo>=</mo><mn>9.00</mn></mrow></math></div>
+          </div>
+          <div class="piece-card">
+            <div class="k">Desviación estándar del número de piezas no conformes</div>
+            <div class="v" id="sdPieces">3.00 piezas</div>
+            <div class="math-explain" id="sdPiecesExplain"><math><mrow><msqrt><mrow><mi>n</mi><mo>×</mo><mi>p</mi><mo>×</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>p</mi><mo>)</mo></mrow></msqrt><mo>=</mo><mn>3.00</mn></mrow></math></div>
+          </div>
+        </div>
+        <div class="note" id="piecesInterpretationNote">
+          Con n = 100 y p = 0.10, se esperan en promedio 10 piezas no conformes. La desviación estándar de 3 piezas
+          indica cuánto puede variar normalmente el conteo alrededor de ese promedio entre muestras del mismo tamaño.
+        </div>
+      </div>
+    </section>
+
+    <section class="card chart-card">
+      <h2>Función de masa de probabilidad</h2>
+      <canvas id="pmfCanvas" width="620" height="310"></canvas>
+      <div class="legend"><strong>Comparación:</strong> barras anchas = probabilidad teórica; barras angostas = proporción observada en la muestra de tamaño <em>n</em>.</div>
+    </section>
+
+    <section class="card chart-card">
+      <h2>Función de distribución acumulada</h2>
+      <canvas id="cdfCanvas" width="620" height="310"></canvas>
+      <div class="legend"><strong>Comparación:</strong> línea continua = CDF teórica; línea discontinua = CDF empírica de la muestra. Al cambiar <em>n</em>, cambia la curva empírica.</div>
+    </section>
+
+    <section class="card simulation">
+      <h2>Resumen de la muestra simulada</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Resultado</th>
+              <th>Interpretación</th>
+              <th>Frecuencia</th>
+              <th>Proporción simulada</th>
+              <th>Probabilidad teórica</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td class="tag-ok">Pieza conforme</td>
+              <td id="freq0">—</td>
+              <td id="prop0">—</td>
+              <td id="theo0">—</td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td class="tag-bad">Pieza no conforme</td>
+              <td id="freq1">—</td>
+              <td id="prop1">—</td>
+              <td id="theo1">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note" id="interpretation">Presiona “Generar nueva muestra” para iniciar la simulación.</div>
+    </section>
+
+    <section class="card simulation">
+      <h2>Datos simulados</h2>
+      <p>
+        Cada fila corresponde a una pieza inspeccionada. El valor <strong>0</strong> representa una
+        <strong>pieza conforme</strong> y el valor <strong>1</strong> una <strong>pieza no conforme</strong>.
+      </p>
+
+      <div class="data-actions">
+        <div>
+          <label for="displayLimit">Número máximo de observaciones a mostrar</label>
+          <input id="displayLimit" type="number" min="10" max="5000" step="10" value="200">
+        </div>
+        <button id="downloadCsvBtn">Descargar muestra completa en CSV</button>
+      </div>
+
+      <h3>Secuencia generada</h3>
+      <div class="data-sequence" id="dataSequence">—</div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Observación</th>
+              <th>X</th>
+              <th>Resultado</th>
+            </tr>
+          </thead>
+          <tbody id="rawDataBody">
+            <tr><td colspan="3">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="small-muted" id="dataDisplayNote"></div>
+    </section>
+  </div>
+</div>
+
+<script>
+const pSlider = document.getElementById("pSlider");
+const nInput = document.getElementById("nInput");
+const pBadge = document.getElementById("pBadge");
+const btn = document.getElementById("simulateBtn");
+const displayLimit = document.getElementById("displayLimit");
+const rawDataBody = document.getElementById("rawDataBody");
+const dataSequence = document.getElementById("dataSequence");
+const dataDisplayNote = document.getElementById("dataDisplayNote");
+const downloadCsvBtn = document.getElementById("downloadCsvBtn");
+
+let currentSample = {
+  n: 100,
+  zeros: 0,
+  ones: 0,
+  prop0: 0,
+  prop1: 0,
+  data: []
+};
+
+function clamp(v,min,max){ return Math.min(max,Math.max(min,v)); }
+function fmt(v,d=4){ return Number(v).toFixed(d); }
+
+function setupCanvas(canvas){
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = Math.round(rect.width*dpr);
+  canvas.height = Math.round(310*dpr);
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return {ctx,w:rect.width,h:310};
+}
+
+function axes(ctx,w,h,titleX,titleY){
+  const L=58,R=22,T=18,B=48;
+  const x0=L, y0=h-B, x1=w-R, y1=T;
+
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle="#9aa6ba";
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(x0,y1);
+  ctx.lineTo(x0,y0);
+  ctx.lineTo(x1,y0);
+  ctx.stroke();
+
+  ctx.fillStyle="#5e6b82";
+  ctx.font="12px Segoe UI";
+  ctx.textAlign="center";
+  ctx.fillText(titleX,(x0+x1)/2,h-10);
+  ctx.save();
+  ctx.translate(16,(y0+y1)/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillText(titleY,0,0);
+  ctx.restore();
+
+  ctx.strokeStyle="#e6eaf1";
+  ctx.fillStyle="#6b778c";
+  ctx.textAlign="right";
+  for(let i=0;i<=5;i++){
+    const y=y0-(y0-y1)*(i/5);
+    ctx.beginPath();
+    ctx.moveTo(x0,y);
+    ctx.lineTo(x1,y);
+    ctx.stroke();
+    ctx.fillText((i/5).toFixed(1),x0-8,y+4);
+  }
+  return {x0,y0,x1,y1};
+}
+
+function drawLegendPMF(ctx,w){
+  const y=13;
+  ctx.font="11px Segoe UI";
+  ctx.textAlign="left";
+
+  ctx.fillStyle="#315efb";
+  ctx.fillRect(w-214,y-8,16,8);
+  ctx.fillStyle="#5e6b82";
+  ctx.fillText("Teórica",w-193,y);
+
+  ctx.fillStyle="#f59f00";
+  ctx.fillRect(w-125,y-8,16,8);
+  ctx.fillStyle="#5e6b82";
+  ctx.fillText("Simulada",w-104,y);
+}
+
+function drawPMF(p, sample){
+  const c=setupCanvas(document.getElementById("pmfCanvas"));
+  const {ctx,w,h}=c;
+  const a=axes(ctx,w,h,"Valor de X","Probabilidad / proporción");
+  drawLegendPMF(ctx,w);
+
+  const theoretical=[1-p,p];
+  const simulated=[sample.prop0,sample.prop1];
+  const labels=["0","1"];
+  const centers=[
+    a.x0+(a.x1-a.x0)*0.30,
+    a.x0+(a.x1-a.x0)*0.70
+  ];
+
+  const wide=Math.min(118,(a.x1-a.x0)*0.24);
+  const narrow=wide*0.46;
+
+  for(let i=0;i<2;i++){
+    // Barra teórica
+    const yt=a.y0-(a.y0-a.y1)*theoretical[i];
+    ctx.fillStyle="#315efb";
+    ctx.globalAlpha=0.30;
+    ctx.fillRect(centers[i]-wide/2,yt,wide,a.y0-yt);
+    ctx.globalAlpha=1;
+
+    // Barra simulada
+    const ys=a.y0-(a.y0-a.y1)*simulated[i];
+    ctx.fillStyle="#f59f00";
+    ctx.fillRect(centers[i]-narrow/2,ys,narrow,a.y0-ys);
+
+    // Etiquetas
+    ctx.fillStyle="#172033";
+    ctx.font="bold 13px Segoe UI";
+    ctx.textAlign="center";
+    ctx.fillText(labels[i],centers[i],a.y0+20);
+
+    ctx.font="11px Segoe UI";
+    ctx.fillStyle="#315efb";
+    ctx.fillText("T: "+theoretical[i].toFixed(3),centers[i],Math.max(yt-20,a.y1+22));
+
+    ctx.fillStyle="#b26d00";
+    ctx.fillText("S: "+simulated[i].toFixed(3),centers[i],Math.max(ys-7,a.y1+35));
+  }
+}
+
+function drawStep(ctx,X,Y,q,color,dashed,labelOffset=0){
+  ctx.save();
+  ctx.strokeStyle=color;
+  ctx.lineWidth=3;
+  ctx.setLineDash(dashed ? [8,6] : []);
+
+  ctx.beginPath();
+  ctx.moveTo(X(-0.5),Y(0));
+  ctx.lineTo(X(0),Y(0));
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(X(0),Y(q));
+  ctx.lineTo(X(1),Y(q));
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(X(1),Y(1));
+  ctx.lineTo(X(1.5),Y(1));
+  ctx.stroke();
+
+  function dot(x,y,filled){
+    ctx.beginPath();
+    ctx.arc(X(x),Y(y),4.5,0,2*Math.PI);
+    ctx.fillStyle=filled ? color : "#ffffff";
+    ctx.fill();
+    ctx.strokeStyle=color;
+    ctx.lineWidth=2;
+    ctx.stroke();
+  }
+
+  dot(0,0,false);
+  dot(0,q,true);
+  dot(1,q,false);
+  dot(1,1,true);
+  ctx.restore();
+}
+
+function drawCDF(p, sample){
+  const c=setupCanvas(document.getElementById("cdfCanvas"));
+  const {ctx,w,h}=c;
+  const a=axes(ctx,w,h,"x","F(x) = P(X ≤ x)");
+
+  const xMin=-0.5, xMax=1.5;
+  const X=x=>a.x0+(x-xMin)/(xMax-xMin)*(a.x1-a.x0);
+  const Y=y=>a.y0-y*(a.y0-a.y1);
+
+  const qTheo=1-p;
+  const qSim=sample.prop0;
+
+  drawStep(ctx,X,Y,qTheo,"#315efb",false);
+  drawStep(ctx,X,Y,qSim,"#f59f00",true);
+
+  ctx.fillStyle="#172033";
+  ctx.font="12px Segoe UI";
+  ctx.textAlign="center";
+  [-0.5,0,0.5,1,1.5].forEach(v=>ctx.fillText(String(v),X(v),a.y0+20));
+
+  ctx.font="11px Segoe UI";
+  ctx.textAlign="left";
+  ctx.fillStyle="#315efb";
+  ctx.fillText("Teórica: 1 − p = "+qTheo.toFixed(3),a.x0+8,a.y1+14);
+  ctx.fillStyle="#b26d00";
+  ctx.fillText("Simulada: F(0) = "+qSim.toFixed(3),a.x0+8,a.y1+30);
+}
+
+function updateTheory(){
+  const p=parseFloat(pSlider.value);
+  pBadge.textContent=p.toFixed(2);
+
+  document.getElementById("prob0").textContent=fmt(1-p);
+  document.getElementById("prob1").textContent=fmt(p);
+  document.getElementById("meanTheo").textContent=fmt(p);
+  document.getElementById("varTheo").textContent=fmt(p*(1-p));
+  document.getElementById("sdTheo").textContent=fmt(Math.sqrt(p*(1-p)));
+  document.getElementById("theo0").textContent=fmt(1-p);
+  document.getElementById("theo1").textContent=fmt(p);
+  updatePieceInterpretation();
+}
+
+
+function updatePieceInterpretation(){
+  const p=parseFloat(pSlider.value);
+  let n=parseInt(nInput.value,10);
+  if(!Number.isFinite(n)) n=100;
+  n=clamp(n,1,100000);
+
+  const meanCount=n*p;
+  const varCount=n*p*(1-p);
+  const sdCount=Math.sqrt(varCount);
+
+  document.getElementById("nPiecesLabel").textContent=n.toLocaleString("es-MX");
+  document.getElementById("meanPieces").textContent=meanCount.toFixed(2)+" piezas";
+  document.getElementById("varPieces").textContent=varCount.toFixed(2)+" piezas²";
+  document.getElementById("sdPieces").textContent=sdCount.toFixed(2)+" piezas";
+
+  document.getElementById("meanPiecesExplain").innerHTML=
+    '<math><mrow><mi>n</mi><mo>×</mo><mi>p</mi><mo>=</mo><mn>'+n.toLocaleString("es-MX")+
+    '</mn><mo>×</mo><mn>'+p.toFixed(2)+'</mn><mo>=</mo><mn>'+meanCount.toFixed(2)+'</mn></mrow></math>';
+
+  document.getElementById("varPiecesExplain").innerHTML=
+    '<math><mrow><mi>n</mi><mo>×</mo><mi>p</mi><mo>×</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>p</mi>'+
+    '<mo>)</mo><mo>=</mo><mn>'+varCount.toFixed(2)+'</mn></mrow></math>';
+
+  document.getElementById("sdPiecesExplain").innerHTML=
+    '<math><mrow><msqrt><mrow><mi>n</mi><mo>×</mo><mi>p</mi><mo>×</mo><mo>(</mo><mn>1</mn>'+
+    '<mo>−</mo><mi>p</mi><mo>)</mo></mrow></msqrt><mo>=</mo><mn>'+sdCount.toFixed(2)+'</mn></mrow></math>';
+
+  document.getElementById("piecesInterpretationNote").innerHTML=
+    "<strong>Interpretación:</strong> si se inspeccionan <strong>"+n.toLocaleString("es-MX")+
+    " piezas</strong> con una probabilidad de no conformidad de <strong>"+(p*100).toFixed(2)+
+    "%</strong>, se esperan en promedio <strong>"+meanCount.toFixed(2)+
+    " piezas no conformes</strong>. La desviación estándar del conteo es de <strong>"+
+    sdCount.toFixed(2)+" piezas</strong>, por lo que el número observado puede variar alrededor del promedio entre muestras del mismo tamaño. "+
+    "La varianza se expresa en <strong>piezas²</strong>, por eso para una interpretación directa conviene usar principalmente la desviación estándar.";
+}
+
+function redraw(){
+  const p=parseFloat(pSlider.value);
+  drawPMF(p,currentSample);
+  drawCDF(p,currentSample);
+}
+
+
+function renderRawData(){
+  const data=currentSample.data || [];
+  let limit=parseInt(displayLimit.value,10);
+  if(!Number.isFinite(limit)) limit=200;
+  limit=clamp(limit,10,5000);
+  displayLimit.value=limit;
+
+  const shown=data.slice(0,limit);
+
+  // Secuencia compacta
+  dataSequence.textContent=shown.join(", ");
+
+  // Tabla detallada
+  rawDataBody.innerHTML="";
+  const frag=document.createDocumentFragment();
+
+  shown.forEach((x,i)=>{
+    const tr=document.createElement("tr");
+
+    const tdObs=document.createElement("td");
+    tdObs.textContent=(i+1).toLocaleString("es-MX");
+
+    const tdX=document.createElement("td");
+    tdX.textContent=x;
+
+    const tdResult=document.createElement("td");
+    tdResult.textContent=x===1 ? "Pieza no conforme" : "Pieza conforme";
+    tdResult.className=x===1 ? "tag-bad" : "tag-ok";
+
+    tr.appendChild(tdObs);
+    tr.appendChild(tdX);
+    tr.appendChild(tdResult);
+    frag.appendChild(tr);
+  });
+
+  rawDataBody.appendChild(frag);
+
+  if(data.length>limit){
+    dataDisplayNote.textContent=
+      "Se muestran las primeras "+limit.toLocaleString("es-MX")+
+      " observaciones de un total de "+data.length.toLocaleString("es-MX")+
+      ". La descarga CSV incluye toda la muestra.";
+  }else{
+    dataDisplayNote.textContent=
+      "Se muestran las "+data.length.toLocaleString("es-MX")+" observaciones de la muestra.";
+  }
+}
+
+function downloadCSV(){
+  const data=currentSample.data || [];
+  if(data.length===0) return;
+
+  const rows=["Observacion,X,Resultado"];
+  data.forEach((x,i)=>{
+    rows.push(
+      (i+1)+","+x+","+(x===1 ? "Pieza no conforme" : "Pieza conforme")
+    );
+  });
+
+  const csv="\uFEFF"+rows.join("\n");
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download="datos_simulados_bernoulli_n_"+currentSample.n+".csv";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function simulate(){
+  const p=parseFloat(pSlider.value);
+  let n=parseInt(nInput.value,10);
+
+  if(!Number.isFinite(n)) n=100;
+  n=clamp(n,1,100000);
+  nInput.value=n;
+  updatePieceInterpretation();
+
+  let ones=0;
+  const data=new Array(n);
+
+  for(let i=0;i<n;i++){
+    const x=Math.random()<p ? 1 : 0;
+    data[i]=x;
+    if(x===1) ones++;
+  }
+
+  const zeros=n-ones;
+  const prop1=ones/n;
+  const prop0=zeros/n;
+
+  currentSample={n,zeros,ones,prop0,prop1,data};
+
+  document.getElementById("freq0").textContent=zeros.toLocaleString("es-MX");
+  document.getElementById("freq1").textContent=ones.toLocaleString("es-MX");
+  document.getElementById("prop0").textContent=fmt(prop0);
+  document.getElementById("prop1").textContent=fmt(prop1);
+  document.getElementById("meanSim").textContent=fmt(prop1);
+
+  const dif=Math.abs(prop1-p);
+  document.getElementById("interpretation").innerHTML =
+    "<strong>Interpretación:</strong> con un tamaño de muestra <strong>n = "+n+
+    "</strong> se observaron <strong>"+ones+"</strong> piezas no conformes, equivalentes a <strong>"+
+    (prop1*100).toFixed(2)+"%</strong>. La probabilidad teórica es <strong>"+
+    (p*100).toFixed(2)+"%</strong>. Diferencia absoluta: <strong>"+
+    (dif*100).toFixed(2)+" puntos porcentuales</strong>.";
+
+  redraw();
+  renderRawData();
+}
+
+let nTimer=null;
+
+pSlider.addEventListener("input",()=>{
+  updateTheory();
+  simulate();
+});
+
+// Ahora el tamaño de muestra actualiza la simulación mientras se modifica.
+nInput.addEventListener("input",()=>{
+  clearTimeout(nTimer);
+  nTimer=setTimeout(()=>{
+    if(nInput.value !== "") simulate();
+  },120);
+});
+
+nInput.addEventListener("change",simulate);
+btn.addEventListener("click",simulate);
+displayLimit.addEventListener("change",renderRawData);
+downloadCsvBtn.addEventListener("click",downloadCSV);
+
+window.addEventListener("resize",()=>{
+  redraw();
+});
+
+updateTheory();
+simulate();
+</script>
+</body>
+</html>
